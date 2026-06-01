@@ -16,6 +16,13 @@ Create these before implementation starts:
 - Razorpay test credentials for development.
 - Razorpay live credentials only when production checkout is ready.
 
+Branch and environment mapping:
+
+- Git branch `dev` uses the dev Supabase project.
+- Git branch `main` uses the prod Supabase project.
+- `dev` is active development.
+- `main` is production/stable.
+
 Recommended workflow:
 
 - Develop locally against the dev Supabase project or local Supabase CLI environment.
@@ -156,4 +163,3 @@ The decision should optimize for correctness, security, maintainability, and ope
 - Supabase managing environments docs: https://supabase.com/docs/guides/deployment/managing-environments
 - Supabase Cron docs: https://supabase.com/docs/guides/cron
 - Supabase scheduled Edge Functions docs: https://supabase.com/docs/guides/functions/schedule-functions
-

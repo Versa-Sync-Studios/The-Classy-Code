@@ -15,7 +15,8 @@ This file is the root instruction file for Codex and any future agents working i
 7. `docs/API.md`
 8. `docs/OPERATIONS.md`
 9. `docs/REPO_HYGIENE.md`
-10. `docs/TESTING.md`
+10. `docs/GIT_WORKFLOW.md`
+11. `docs/TESTING.md`
 
 Use `docs/SKILLS.md` for repeatable project workflows.
 
@@ -69,6 +70,7 @@ The app must support:
 - Keep comments crisp. Use `//` for short inline or leading comments in TypeScript when a comment is genuinely useful.
 - Do not write long explanatory comments for self-explanatory code.
 - Keep lines reasonably short and readable. Break long expressions instead of hiding complexity in a single line.
+- Use the Git workflow in `docs/GIT_WORKFLOW.md`: `dev` is active development, `main` is production/stable.
 
 ## Commands
 

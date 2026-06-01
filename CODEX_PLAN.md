@@ -365,6 +365,14 @@ Defines dev/prod Supabase setup, environment rules, and backend architecture dec
 
 Defines public repository hygiene, secret handling, clean-code rules, UI copy rules, asset rules, and Git hygiene.
 
+### `docs/GIT_WORKFLOW.md`
+
+Defines the two-branch workflow:
+
+- `dev` is active development and connects to the dev Supabase project.
+- `main` is production/stable and connects to the prod Supabase project.
+- Promote work by verifying `dev`, merging into `main`, and pushing `main`.
+
 ### `docs/TESTING.md`
 
 Defines verification expectations for auth, roles, course discovery, enrollment, payment, learning, media, and UI.
