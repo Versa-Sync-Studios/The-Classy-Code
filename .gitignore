@@ -28,6 +28,8 @@ pnpm-debug.log*
 .temp/
 supabase/.branches/
 supabase/.temp/
+SUPABASE_LOCAL_NOTES.md
+SUPABASE_CLI_BUG_REPORT.md
 
 # OS and editor
 .DS_Store
@@ -41,4 +43,3 @@ desktop.ini
 # Misc
 *.tsbuildinfo
 .vercel/
-
