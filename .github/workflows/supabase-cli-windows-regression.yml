@@ -7,8 +7,8 @@ permissions:
   contents: read
 
 jobs:
-  credential-regression:
-    name: Compare Supabase CLI credential reads on Windows
+  beta-credential-check:
+    name: Check beta credential reads on Windows
     runs-on: windows-latest
 
     steps:
@@ -21,69 +21,51 @@ jobs:
             throw "Missing repository secret SUPABASE_ACCESS_TOKEN_TEST."
           }
 
-      - name: Download CLI versions
+      - name: Install beta CLI package
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $versions = @("2.103.0", "2.102.0")
+          npm view supabase dist-tags
+          npx supabase@beta --version
 
-          foreach ($version in $versions) {
-            $dir = Join-Path $env:RUNNER_TEMP "supabase-$version"
-            New-Item -ItemType Directory -Force -Path $dir | Out-Null
-
-            $zip = Join-Path $dir "supabase_$version`_windows_amd64.zip"
-            $url = "https://github.com/supabase/cli/releases/download/v$version/supabase_$version`_windows_amd64.zip"
-
-            curl.exe -L --fail --retry 3 --output $zip $url
-            Expand-Archive -LiteralPath $zip -DestinationPath $dir -Force
-
-            & (Join-Path $dir "supabase.exe") --version
-          }
-
-      - name: Compare persisted credential behavior
+      - name: Test beta persisted credential behavior
         shell: pwsh
         env:
           TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN_TEST }}
         run: |
-          $cli103 = Join-Path $env:RUNNER_TEMP "supabase-2.103.0\supabase.exe"
-          $cli102 = Join-Path $env:RUNNER_TEMP "supabase-2.102.0\supabase.exe"
-
-          "## Supabase CLI Windows credential regression test" >> $env:GITHUB_STEP_SUMMARY
+          "## Supabase CLI beta Windows credential test" >> $env:GITHUB_STEP_SUMMARY
           "" >> $env:GITHUB_STEP_SUMMARY
 
-          "### Login with v2.103.0" >> $env:GITHUB_STEP_SUMMARY
-          & $cli103 login --token $env:TOKEN --name supabase
-          $login103 = $LASTEXITCODE
-          "v2.103.0 login exit code: $login103" >> $env:GITHUB_STEP_SUMMARY
+          $version = npx supabase@beta --version
+          "Beta version: $version" >> $env:GITHUB_STEP_SUMMARY
+
+          "### Login with beta" >> $env:GITHUB_STEP_SUMMARY
+          npx supabase@beta login --token $env:TOKEN --name supabase
+          $login = $LASTEXITCODE
+          "beta login exit code: $login" >> $env:GITHUB_STEP_SUMMARY
 
           "### Credential Manager entries" >> $env:GITHUB_STEP_SUMMARY
           "``````txt" >> $env:GITHUB_STEP_SUMMARY
           cmdkey /list | findstr /i "Supabase" >> $env:GITHUB_STEP_SUMMARY
           "``````" >> $env:GITHUB_STEP_SUMMARY
 
-          "### v2.103.0 projects list" >> $env:GITHUB_STEP_SUMMARY
-          & $cli103 projects list
-          $list103 = $LASTEXITCODE
-          "v2.103.0 projects list exit code: $list103" >> $env:GITHUB_STEP_SUMMARY
+          "### beta projects list" >> $env:GITHUB_STEP_SUMMARY
+          npx supabase@beta projects list
+          $list = $LASTEXITCODE
+          "beta projects list exit code: $list" >> $env:GITHUB_STEP_SUMMARY
 
-          "### v2.102.0 projects list using same persisted credential" >> $env:GITHUB_STEP_SUMMARY
-          & $cli102 projects list
-          $list102 = $LASTEXITCODE
-          "v2.102.0 projects list exit code: $list102" >> $env:GITHUB_STEP_SUMMARY
+          "### beta projects list with explicit profile" >> $env:GITHUB_STEP_SUMMARY
+          npx supabase@beta --profile supabase projects list
+          $listProfile = $LASTEXITCODE
+          "beta explicit profile exit code: $listProfile" >> $env:GITHUB_STEP_SUMMARY
 
           "" >> $env:GITHUB_STEP_SUMMARY
           "### Result" >> $env:GITHUB_STEP_SUMMARY
 
-          if ($list103 -ne 0 -and $list102 -eq 0) {
-            "Regression reproduced: v2.103.0 cannot read the persisted credential, while v2.102.0 can." >> $env:GITHUB_STEP_SUMMARY
-            throw "Regression reproduced."
-          }
-
-          if ($list103 -eq 0 -and $list102 -eq 0) {
-            "Regression not reproduced on this runner: both versions read the persisted credential." >> $env:GITHUB_STEP_SUMMARY
+          if ($list -eq 0 -or $listProfile -eq 0) {
+            "Beta can read the persisted credential." >> $env:GITHUB_STEP_SUMMARY
             exit 0
           }
 
-          "Test inconclusive. v2.103.0 exit code: $list103. v2.102.0 exit code: $list102." >> $env:GITHUB_STEP_SUMMARY
-          throw "Test inconclusive."
-
+          "Beta still cannot read the persisted credential." >> $env:GITHUB_STEP_SUMMARY
+          throw "Beta credential read failed."
